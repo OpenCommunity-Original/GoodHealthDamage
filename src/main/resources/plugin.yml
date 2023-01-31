@@ -1,0 +1,8 @@
+name: GoodHealthDamage
+main: org.opencommunity.goodhealthdamage.Main
+version: ${version}
+api-version: 1.19
+author: Envel
+description: None
+
+
