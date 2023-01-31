@@ -29,6 +29,7 @@ public class Main extends JavaPlugin implements Listener {
 			config.set("version", serverVersion);
 			generateConfig();
 		}
+		getServer().getPluginManager().registerEvents(this, this);
 	}
 
 	@EventHandler
