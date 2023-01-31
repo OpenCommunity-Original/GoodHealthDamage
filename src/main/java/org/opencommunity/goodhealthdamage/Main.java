@@ -24,9 +24,9 @@ public class Main extends JavaPlugin implements Listener {
 	public void onEnable() {
 		saveDefaultConfig();
 		config = getConfig();
-		String currentVersion = getDescription().getVersion();
-		if (!config.contains("version") || !Objects.equals(config.getString("version"), currentVersion)) {
-			config.set("version", currentVersion);
+		String serverVersion = Bukkit.getBukkitVersion();
+		if (!config.contains("version") || !Objects.equals(config.getString("version"), serverVersion)) {
+			config.set("version", serverVersion);
 			generateConfig();
 		}
 	}
@@ -58,14 +58,10 @@ public class Main extends JavaPlugin implements Listener {
 				try {
 					assert entityType.getEntityClass() != null;
 					Entity entity = loc.getWorld().spawn(loc, entityType.getEntityClass());
-					System.out.println("entity " + entity);
 					if (entity instanceof LivingEntity livingEntity) {
-						System.out.println("livingEntity " + livingEntity);
 						int health = (int) Objects.requireNonNull(livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue();
-						System.out.println("health " + health);
 						AttributeInstance attackDamage = livingEntity.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
 						int damage = attackDamage != null ? (int) attackDamage.getValue() : 0;
-						System.out.println("damage " + damage);
 						config.set(entityType.name() + ".health", health);
 						config.set(entityType.name() + ".damage", damage);
 						entity.remove();
