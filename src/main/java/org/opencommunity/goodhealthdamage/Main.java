@@ -41,9 +41,19 @@ public class Main extends JavaPlugin implements Listener {
 		String entityType = entity.getType().name();
 		int health = config.getInt(entityType + ".health", (int) Objects.requireNonNull(livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue());
 		int damage = config.getInt(entityType + ".damage", 0);
-		Objects.requireNonNull(livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(health);
-		livingEntity.setHealth(health);
-		Objects.requireNonNull(livingEntity.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)).setBaseValue(damage);
+		if (health != -1) {
+			AttributeInstance maxHealth = livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+			if (maxHealth != null) {
+				maxHealth.setBaseValue(health);
+				livingEntity.setHealth(health);
+			}
+		}
+		if (damage != -1) {
+			AttributeInstance attackDamage = livingEntity.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+			if (attackDamage != null) {
+				attackDamage.setBaseValue(damage);
+			}
+		}
 	}
 
 	private void generateConfig() {
