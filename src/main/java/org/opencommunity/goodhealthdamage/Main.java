@@ -2,7 +2,9 @@ package org.opencommunity.goodhealthdamage;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -22,8 +24,11 @@ public class Main extends JavaPlugin implements Listener {
 	public void onEnable() {
 		saveDefaultConfig();
 		config = getConfig();
-		generateConfig();
-		getServer().getPluginManager().registerEvents(this, this);
+		String currentVersion = getDescription().getVersion();
+		if (!config.contains("version") || !Objects.equals(config.getString("version"), currentVersion)) {
+			config.set("version", currentVersion);
+			generateConfig();
+		}
 	}
 
 	@EventHandler
@@ -41,17 +46,32 @@ public class Main extends JavaPlugin implements Listener {
 	}
 
 	private void generateConfig() {
+		World world = Bukkit.getWorlds().stream().findFirst().orElse(null);
+		if (world == null) {
+			getLogger().warning("No world found, unable to generate config");
+			return;
+		}
+
 		for (EntityType entityType : EntityType.values()) {
 			if (entityType.isAlive() && !config.contains(entityType.name())) {
-				Location loc = new Location(Bukkit.getWorlds().get(0), 0, 0, 0);
-				assert entityType.getEntityClass() != null;
-				Entity entity = loc.getWorld().spawn(loc, entityType.getEntityClass());
-				if (entity instanceof LivingEntity livingEntity) {
-					int health = (int) Objects.requireNonNull(livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue();
-					int damage = (int) Objects.requireNonNull(livingEntity.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE)).getValue();
-					config.set(entityType.name() + ".health", health);
-					config.set(entityType.name() + ".damage", damage);
-					entity.remove();
+				Location loc = new Location(world, 0, 0, 0);
+				try {
+					assert entityType.getEntityClass() != null;
+					Entity entity = loc.getWorld().spawn(loc, entityType.getEntityClass());
+					System.out.println("entity " + entity);
+					if (entity instanceof LivingEntity livingEntity) {
+						System.out.println("livingEntity " + livingEntity);
+						int health = (int) Objects.requireNonNull(livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue();
+						System.out.println("health " + health);
+						AttributeInstance attackDamage = livingEntity.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+						int damage = attackDamage != null ? (int) attackDamage.getValue() : 0;
+						System.out.println("damage " + damage);
+						config.set(entityType.name() + ".health", health);
+						config.set(entityType.name() + ".damage", damage);
+						entity.remove();
+					}
+				} catch (Exception e) {
+					getLogger().warning("Error generating config for " + entityType + ": " + e.getMessage());
 				}
 			}
 		}
